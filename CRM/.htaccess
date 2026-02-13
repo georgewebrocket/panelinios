@@ -1,0 +1,11 @@
+#RewriteEngine On
+#RewriteCond %{HTTPS} on
+#RewriteRule (.*) http://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+ExpiresActive On
+#ExpiresDefault A1
+ExpiresDefault "access plus 1 second"
+Header append Cache-Control must-revalidate

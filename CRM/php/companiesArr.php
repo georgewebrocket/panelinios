@@ -1,0 +1,96 @@
+<?php
+$arrCompany = array (
+  0 => 
+    array (
+      'id' => '0',
+      'companyname' => '',
+      'companyname_en' => '',
+      'phone1' => '',
+      'phone2' => '',
+      'mobilephone' =>  '',
+      'contactperson' =>  '',
+      'basiccategory' =>  '',
+      'reference' =>  '',
+      'area' =>  '',
+      'geo_x' =>  '',
+      'geo_y' =>  '',
+      'address' =>  '',
+      'zipcode' =>  '',
+      'email' =>  '',
+      'website' =>  '',
+      'facebook' =>  '',
+      'twitter' =>  '',
+      'package' =>  '',
+      'discount' =>  '',
+      'price' =>  '',
+      'vatzone' => '',
+      'catalogueid' =>  '0',
+      'expires' =>  '',
+      'username' =>  '',
+      'password' =>  '',
+      'user' =>  '',
+      'userdataentry' =>  '',
+      'recalldate' =>  '',
+      'recalltime' =>  '',
+      'status' =>  '',
+      'history' => '',
+      'show_phone1' => '',
+      'show_phone2' => '',
+      'show_mobilephone' => '',
+      'show_email' => '',
+      'LinkedIn' =>  '',
+      'ShortDescription' =>  '',
+      'FullDescription' =>  '',
+      'DeliveryDate' =>  '',
+      'DeliveryTime' =>  '',
+      'DeliveryNotes' =>  '',
+      'subcategory' =>  0,
+    )
+);
+        
+$arrListing = array (
+    'listing_id' => '0',
+    'listing_title_1' =>  '',
+    'listing_title_7' =>  '',
+    'listing_location' =>  '',
+    'listing_location_path' =>  '',
+    'listing_address' =>  '',
+    'listing_zip' =>  '',
+    'listing_posted_latitude' =>  '',
+    'listing_posted_longitude' =>  '',
+    'listing_phone' =>  '',
+    'listing_email' =>  '',
+    'listing_website' =>  '',
+    'listing_zip_lat' =>  '',
+    'listing_zip_lon' =>  '',
+    'listing_facebook' =>  '',
+    'listing_twitter' =>  '',
+    'listing_descbrief_7' =>  '',
+    'listing_descfull_7' =>  '',
+    'listing_expire' =>  '',
+    'listing_category' =>  '',
+    'listing_category_path' =>  '',
+    'listing_package' =>  '',
+    'listing_seller' =>  '0',
+    'listing_posted_latitude' =>  '0',
+    'listing_posted_longitude' =>  '0',
+    'listing_package_type' =>  'subscription'
+);
+
+$arrSeller = array (
+    'seller_id' => '0',
+    'seller_username' =>  '',
+    'seller_password' =>  '',
+    'seller_payment_period' =>  'annualy',
+    'seller_firstname' =>  '',
+    'seller_expire_date' =>  '',
+    'seller_company' =>  '',
+    'seller_type' =>  'personal',
+    'seller_status' =>  'approved',
+    'seller_status_feature' =>  'featured',
+    'seller_status_email' =>  'approved'
+);
+        
+
+
+?>

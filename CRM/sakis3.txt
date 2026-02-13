@@ -1,0 +1,1 @@
+SELECT COMPANIES.id, companyname, CONCAT_WS(', ', phone1, phone2, mobilephone) AS phones, status, COMPANIES.user, recalldate, recalltime, area, basiccategory, subcategory, '' AS LASTACTIONTIME FROM COMPANIES WHERE (COMPANIES.id>0)  AND (reference =9) AND (status =4)
