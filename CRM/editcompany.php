@@ -1885,6 +1885,7 @@ EOT;
                     array(
                         "type" => "combobox",
                         "conn" => $db1,
+                        "sql" => "SELECT EP_CITIES.id, CONCAT(EP_CITIES.description, ' (', AREAS.description, ')') AS description FROM EP_CITIES INNER JOIN AREAS ON EP_CITIES.area_id = AREAS.id",
                         "table" => "EP_CITIES",
                         "idField" => "id",
                         "descField" => "description",
