@@ -22,7 +22,37 @@ function normPhone($phone) {
 
 }
 
+function updateCompanySites($db, $companyId, $sitesVal, $delimiterRows = "///", $delimiterColumns = "||") {
+    $companyId = intval($companyId);
+    $db->execSQL("DELETE FROM COMPANY_SITES WHERE company_id=?", array($companyId));
 
+    if (trim($sitesVal)=="") {
+        return;
+    }
+
+    $rows = explode($delimiterRows, $sitesVal);
+    for ($i=0; $i<count($rows); $i++) {
+        $row = trim($rows[$i]);
+        if ($row=="") {
+            continue;
+        }
+
+        $cols = explode($delimiterColumns, $row);
+        $address = isset($cols[0]) ? trim($cols[0]) : "";
+        $phone = isset($cols[1]) ? trim($cols[1]) : "";
+        $mapX = isset($cols[2]) ? trim($cols[2]) : "";
+        $mapY = isset($cols[3]) ? trim($cols[3]) : "";
+        $cityId = isset($cols[4]) && trim($cols[4])!="" ? intval($cols[4]) : 0;
+        $areaId = isset($cols[5]) && trim($cols[5])!="" ? intval($cols[5]) : 0;
+
+        if ($address=="" && $phone=="" && $mapX=="" && $mapY=="" && $cityId==0 && $areaId==0) {
+            continue;
+        }
+
+        $sql = "INSERT INTO COMPANY_SITES (company_id, address, phone, map_x, map_y, city_id, area_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $db->execSQL($sql, array($companyId, $address, $phone, $mapX, $mapY, $cityId, $areaId));
+    }
+}
 
 $noCacheHash = "&chash=" . date("YmdHis");
 
@@ -95,6 +125,7 @@ if ($id==0) {
 }
 
 if (isset($_GET['save']) && $_GET['save'] == 1) {
+    $oldSitesVal = $company->get_sites();
     $err = 0;
     if ($_POST['txtCompanyname'] == ""){
         $err = 1;
@@ -374,7 +405,7 @@ if (isset($_GET['save']) && $_GET['save'] == 1) {
             $myCatalogueId = $myCatalogueId == 0? 0: func::getCatalogueidFromPid($_POST['txtCatalogueid']);
             $company->set_catalogueid($myCatalogueId);
             //$pid = $company->get_catalogueid() * 2 + 7128;
-            echo "updating txtCatalogueid...";
+            //echo "updating txtCatalogueid...";
             $pid = $_POST['txtCatalogueid'];
         }
 
@@ -536,6 +567,10 @@ if (isset($_GET['save']) && $_GET['save'] == 1) {
             //include 'updatePanelCompany.php';
             
             $msg .= "<span style=\"font-size:16px; line-height:30px\">" . $panelMsg . "</span>";
+
+            if (trim($oldSitesVal) != trim($_POST['t_sites-val'])) {
+                updateCompanySites($db1, $id, $_POST['t_sites-val']);
+            }
             
             $companyChange->commitChanges();
             
@@ -1842,6 +1877,31 @@ EOT;
                 $t_sites = new arrayControl("t_sites", $company->get_sites(), 6);
                 $t_sites->setColumnNames(array("ΔΝΣΗ", "ΤΗΛ", "Χ", "Υ", "ΠΟΛΗ", "ΝΟΜΟΣ"));
                 $t_sites->setColumnWidths(array(20,15,10,10,15,15));
+                $t_sites->setColumnTypes(array(
+                    "text",
+                    "text",
+                    "text",
+                    "text",
+                    array(
+                        "type" => "combobox",
+                        "conn" => $db1,
+                        "table" => "EP_CITIES",
+                        "idField" => "id",
+                        "descField" => "description",
+                        "where" => "id>0",
+                        "orderBy" => "description"
+                    ),
+                    array(
+                        "type" => "combobox",
+                        "conn" => $db1,
+                        "table" => "AREAS",
+                        "idField" => "id",
+                        "descField" => "description",
+                        "where" => "parentid>0",
+                        "orderBy" => "description"
+                    )),
+
+                );
                 $t_sites->getControl();
                 $t_sites->getScriptGetArray();
                 echo "<div class=\"clear\"></div>";

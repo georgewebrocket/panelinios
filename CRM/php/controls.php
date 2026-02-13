@@ -1019,7 +1019,7 @@ class selectList
 
 
 
-class arrayControl
+class arrayControl_v1
 {
     
     protected $_id, $_columnCount, $_rowCount, $_styleClass, $_columnNames, 
@@ -1223,4 +1223,333 @@ EOT;
 
 
 
-?>
+
+
+/*
+Example usage:
+
+    $t_sites = new arrayControl("t_sites", $company->get_sites(), 3);
+    $t_sites->setColumnNames(array("Address", "Type", "City"));
+    $t_sites->setColumnWidths(array(40, 30, 30));
+    $t_sites->setColumnTypes(array(
+        "text",
+        array(
+            "type" => "combobox",
+            "conn" => $db1,
+            "table" => "COMPANY_TYPES",
+            "idField" => "id",
+            "descField" => "description",
+            "where" => "active=1",
+            "orderBy" => "description"
+        ),
+        "text"
+    ));
+    $t_sites->getControl();
+    $t_sites->getScriptGetArray();
+*/
+class arrayControl
+{
+    
+    protected $_id, $_columnCount, $_rowCount, $_styleClass, $_columnNames, 
+            $_columnTypes, $_rowNames, $_canAddRows, $_canDelRows, $_val, 
+            $_delimiterRows, $_delimiterColumns, $_columnWidths;
+    
+    public function __construct($id, $val, $columnCount, $canAddRows = TRUE,
+            $canDelRows = TRUE, $delimiterRows = "///", $delimiterColumns = "||") {
+        $this->_id = $id;
+        $this->_val = $val;
+        $this->_columnCount = $columnCount;
+        $this->_canAddRows = $canAddRows;
+        $this->_canDelRows = $canDelRows;
+        $this->_delimiterRows = $delimiterRows;
+        $this->_delimiterColumns = $delimiterColumns;
+        $this->_val = $val;
+        $this->_rowCount = 1;
+        $this->_columnTypes = [];
+    }
+    
+    public function setColumnNames($val) {
+        $this->_columnNames = $val;
+    }    
+    
+    public function setColumnWidths($val) {
+        $this->_columnWidths = $val;
+    }
+
+
+    public function setColumnTypes($val) {
+        $this->_columnTypes = $val;
+    }
+
+    protected function isComboboxColumn($index) {
+        if (!isset($this->_columnTypes[$index])) {
+            return FALSE;
+        }
+
+        $columnType = $this->_columnTypes[$index];        
+        if (is_array($columnType) && isset($columnType["type"])) {
+            $columnType = $columnType["type"];
+        }
+
+        return $columnType === "combobox";
+    }
+
+    protected function getComboboxOptions($index) {
+        if (!isset($this->_columnTypes[$index]) || !is_array($this->_columnTypes[$index])) {
+            return array();
+        }
+
+        $columnType = $this->_columnTypes[$index];
+        if (isset($columnType["options"]) && is_array($columnType["options"])) {
+            return $columnType["options"];
+        }
+
+        return array();
+    }
+
+    protected function renderComboboxFromDb($index, $val, $width) {
+        $columnType = $this->_columnTypes[$index];
+        if (!is_array($columnType) || !isset($columnType["conn"])) {
+            return "";
+        }
+
+        $conn = $columnType["conn"];
+        $sql = isset($columnType["sql"]) ? $columnType["sql"] : "";
+
+        if ($sql == "" && isset($columnType["table"])) {
+            $table = $columnType["table"];
+            $idField = isset($columnType["idField"]) ? $columnType["idField"] : "id";
+            $descField = isset($columnType["descField"]) ? $columnType["descField"] : "description";
+            $where = isset($columnType["where"]) && $columnType["where"]!="" ? " WHERE " . $columnType["where"] : "";
+            $orderBy = isset($columnType["orderBy"]) && $columnType["orderBy"]!="" ? $columnType["orderBy"] : $descField;
+            $sql = "SELECT $idField, $descField FROM $table" . $where . " ORDER BY " . $orderBy;
+        }
+
+        if ($sql == "") {
+            return "";
+        }
+
+        $idField = isset($columnType["idField"]) ? $columnType["idField"] : "id";
+        $descField = isset($columnType["descField"]) ? $columnType["descField"] : "description";
+
+        
+        $cbo = new comboBox(uniqid("acmb_"), $conn, $sql, $idField, $descField, $val, "");
+        $cbo->set_enableNoChoice(FALSE);
+        $cbo->set_extraAttr('class="inputcell combobox" ' . $width);
+
+        return $cbo->comboBox_simple();
+    }
+
+    protected function renderColumnCell($index, $val, $width) {
+        if ($this->isComboboxColumn($index)) {
+            $dbCombobox = $this->renderComboboxFromDb($index, $val, $width);
+            if ($dbCombobox != "") {
+                return $dbCombobox;
+            }
+
+            $options = $this->getComboboxOptions($index);
+            $input = '<select ' . $width . ' class="inputcell combobox">';
+
+            if (count($options) == 0) {
+                $input .= '<option value="' . $val . '" selected="selected">' . $val . '</option>';
+            }
+            else {
+                $selectedFound = FALSE;
+                foreach ($options as $key => $descr) {
+                    $key = (string) $key;
+                    $descr = (string) $descr;
+                    $selected = "";
+                    if ((string) $val === $key) {
+                        $selected = ' selected="selected"';
+                        $selectedFound = TRUE;
+                    }
+                    $input .= '<option value="' . $key . '"' . $selected . '>' . $descr . '</option>';
+                }
+
+                if (!$selectedFound && $val !== "") {
+                    $input .= '<option value="' . $val . '" selected="selected">' . $val . '</option>';
+                }
+            }
+
+            $input .= '</select>';
+            return $input;
+        }
+
+        return '<input ' . $width . ' type="text" class="inputcell" value="' . $val . '">';
+    }
+
+    
+    public function getControl() {
+        $control = $this->_id;        
+        
+        $arRows = explode($this->_delimiterRows, $this->_val);
+        $countRows = $this->_val==""? 0: count($arRows); 
+        
+        if ($this->_columnNames!="") {
+            echo "<div class=\"head\"><div style=\"width:5%;display:inline-block\"></div>";
+            for ($k = 0; $k < $this->_columnCount; $k++) {
+                $width = $this->_columnWidths!=""? "style=\"width:".$this->_columnWidths[$k]."%\"": "";
+                $val = $this->_columnNames[$k];
+                echo "<input $width class=\"headcell\" type\"text\" readonly value=\"$val\" >";
+            }
+            echo "</div>";
+        }
+        
+        echo "<div id=\"".$this->_id."\">";
+        echo "<input id=\"$control-val\" name=\"$control-val\" type=\"hidden\" value=\"".$this->_val."\" >";
+                
+        for ($i = 0; $i < $countRows; $i++) {
+            $arCol = explode($this->_delimiterColumns, $arRows[$i]);
+            echo "<div class=\"row\">";
+            echo "<div style=\"width:5%;display:inline-block\"><span class=\"fa fa-arrows-v\"></span></div>";
+            for ($k = 0; $k < count($arCol); $k++) {                
+                $val = $arCol[$k];
+                // $width = $this->_columnWidths!=""? "style=\"width:".$this->_columnWidths[$k]."%\"": "";                                
+                // echo "<input $width type\"text\" class=\"inputcell\" value=\"$val\">";
+                $width = $this->_columnWidths!=""? "style=\"width:".$this->_columnWidths[$k]."%\"": "";
+                echo $this->renderColumnCell($k, $val, $width);
+            }
+            echo "&nbsp;<span class=\"fa fa-remove del-row\"></span>";
+            
+            echo "</div>";
+        } 
+        echo "</div>";
+        
+        
+        echo $this->getScriptInit();
+        
+        if ($this->_canAddRows) {
+            //echo "<div class=\"head\"><div style=\"width:30px;display:inline-block\"></div>";
+            echo "<div style=\"width:30px;display:inline-block\"></div><a id=\"$control-addnew\"><span class=\"fa fa-plus\"></span></a><br/><br/>";
+            echo $this->getScriptAddNew();
+        }
+        
+        echo $this->getScriptDelRow();
+        echo $this->getScriptUpdateArray();
+    }
+    
+    
+    public function getScriptInit() {
+        $control = $this->_id;
+        $script = <<<EOT
+<script>        
+    $(function() {
+        $( "#$control" ).sortable({
+            update: function(event, ui) {                
+                var val = getArray('$control');
+                $('#$control-val').val(val);
+            }
+        });
+        $( "#$control" ).disableSelection();
+    });
+</script>
+EOT;
+        return $script;
+    }
+    
+    
+    
+    public function getScriptAddNew() {
+        $control = $this->_id;
+        $newRow = "<div class=\"row\">";
+        $newRow .= "<div style=\"width:5%;display:inline-block\"><span class=\"fa fa-arrows-v\"></span></div>";
+        for ($k = 0; $k < $this->_columnCount; $k++) {            
+            $width = $this->_columnWidths!=""? "style=\"width:".$this->_columnWidths[$k]."%\"": "";                                
+            // $newRow .= "<input $width type\"text\" class=\"inputcell\" value=\"\">";
+            $newRow .= $this->renderColumnCell($k, "", $width);
+        }
+        $newRow .= "&nbsp;<span class=\"fa fa-remove del-row\"></span>";
+        $newRow .= "<div>";
+        $newRow = addslashes($newRow);
+        $script = <<<EOT
+<script>
+    $(function() {
+        $('#$control-addnew').css('cursor','pointer');        
+        $('#$control-addnew').click(function() {
+            $('#$control').append("$newRow");
+                
+            $('.del-row').click(function() {
+                $(this).parent().remove();
+            });
+                
+            $('#$control .inputcell').change(function() {
+                var val = getArray('$control');
+                $('#$control-val').val(val);
+            });
+                
+        });
+    });
+</script>
+EOT;
+        return $script;
+    }
+    
+    
+    
+    
+    
+    public function getScriptDelRow() {
+        $control = $this->_id;
+        $script = <<<EOT
+<script>
+    $(function() {
+        $('.del-row').css('cursor','pointer');
+        $('.del-row').click(function() {
+            $(this).parent().remove();
+                
+            var val = getArray('$control');
+            $('#$control-val').val(val);
+                
+        });
+    });
+</script>
+EOT;
+        return $script;
+    }
+    
+    public function getScriptUpdateArray() {
+        $control = $this->_id;
+        $delimiterColumns = $this->_delimiterColumns;
+        $delimiterRows = $this->_delimiterRows;
+        $script = <<<EOT
+<script>
+    $(function() {
+        $('#$control .inputcell').change(function() {
+            var val = getArray('$control');
+            $('#$control-val').val(val);
+        });
+    });
+                
+</script>
+
+EOT;
+        return $script;
+        
+    }
+    
+    public function getScriptGetArray() {
+        $delimiterColumns = $this->_delimiterColumns;
+        $delimiterRows = $this->_delimiterRows;
+        
+        $script = <<<EOT
+<script>
+function getArray(el) {
+        var arr = '';
+        $('#'+el+' > div.row').each(function() {
+            var row = ''; 
+            $(this).find('.inputcell').each(function() {
+                row = row + $(this).val() + '$delimiterColumns' ;                
+            });
+            row = row.substring(0, row.length - 2);
+            arr = arr==''? row: arr + '$delimiterRows' + row;
+        });
+        return arr;
+    }                
+                
+</script>               
+
+EOT;
+        echo $script;
+    }
+    
+}
