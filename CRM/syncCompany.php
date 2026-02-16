@@ -33,10 +33,10 @@ $companyonlineid = $crm->get_catalogueid();
 if ($companyonlineid=="") { $companyonlineid = 0;}
 if ($companyonlineid>0) {
 	$str = func::curl_file_get_contents("https://www.panelinios.gr/ws/getCompany.php?companyid=$companyonlineid");
-        if (trim($str)=="") {
-            die("Company does not exist on line");
-        }
-		//echo $companyonlineid;
+	if (trim($str)=="") {
+		die("Company does not exist on line");
+	}
+	//echo $str;
 	$xml   = simplexml_load_string($str);
 	$array = func::XML2Array($xml);
 	$online = array($xml->getName() => $array);
@@ -318,7 +318,7 @@ function syncCrm2Online() {
 		$.post(url, 
 				{fields: fields, vals: vals, id: onlineid})
 		.done(function(data) {
-			//alert(data);
+			// console.log(data);
 			if (data=='1') {
 				location.reload();
 			}

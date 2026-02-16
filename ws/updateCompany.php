@@ -86,7 +86,7 @@ if ($id==0) {
         $sql2 = "UPDATE companies SET p_id = ? WHERE id= ?";
         $res2 = $db1->execSQL($sql2, array($pid, $res));
 
-        updateCompanySites($db1, $res, $sitesVal);
+        updateCompanySites($db1, $res, $sitesVal); 
 
     }
         
