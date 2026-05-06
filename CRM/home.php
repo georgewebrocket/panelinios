@@ -264,13 +264,13 @@ if (isset($_REQUEST['BtnSearch']) && $_REQUEST['BtnSearch']=="SEARCH") {
             $sqlProductCategory = " AND productcategory =".$_REQUEST['c_productcategory'];
         }
         
-        $sqlUser = "";
-        if ($_REQUEST['cUser']!=0) {                
-            $userfullname = func::vlookup("fullname", "USERS", "id=".$_REQUEST['cUser'], $db1);
-            $criteria .= $l->l("user")."=".$userfullname."/";
-            $sqlUser = " AND userid =".$_REQUEST['cUser'];
+        // $sqlUser = "";
+        // if ($_REQUEST['cUser']!=0) {                
+        //     $userfullname = func::vlookup("fullname", "USERS", "id=".$_REQUEST['cUser'], $db1);
+        //     $criteria .= $l->l("user")."=".$userfullname."/";
+        //     $sqlUser = " AND userid =".$_REQUEST['cUser'];
             
-        }
+        // }
         
         $sqlRecall = "";
         if ($_REQUEST['txtRecallDate']!="") {
@@ -300,8 +300,13 @@ if (isset($_REQUEST['BtnSearch']) && $_REQUEST['BtnSearch']=="SEARCH") {
             
             
         }
+
+        $sqlStatusUser = "";
+        if ($_REQUEST['cUser']!=0) {
+            $sqlStatusUser = " AND userid =".$_REQUEST['cUser'];
+        }
         
-        $sql .= " AND (id IN (SELECT companyid FROM COMPANIES_STATUS WHERE id>0 " . $sqlStatus . $sqlProductCategory . $sqlUser . $sqlRecall . $sqlStatusDates . "))";
+        $sql .= " AND (id IN (SELECT companyid FROM COMPANIES_STATUS WHERE id>0 " . $sqlStatus . $sqlProductCategory . $sqlRecall . $sqlStatusDates . $sqlStatusUser . " ))";
     
         
         
@@ -962,8 +967,12 @@ $colorDM = func::vlookup("color", "PRODUCT_CATEGORIES", "id=2", $db1);
                         <input type="button" value="PENDING VOUCHERS" />
                         </a>
                         &nbsp;
-                        
+
+                        <a href="home.php?c_companystatus=20&cUser={$userid}&cOnlineStatus=-1&c_hasdomain=-1&BtnSearch=SEARCH">
+                        <input type="button" value="ΑΝΑΜΟΝΗ ΚΑΤΑΘΕΣΗΣ" />
                         </a>
+                        
+                        
 EOT;
                     }
                     if ($_SESSION['user_profile']>1) {

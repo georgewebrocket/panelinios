@@ -1178,6 +1178,9 @@ if (isset($_REQUEST['gindex']) && $_REQUEST['gindex']==1) {
                     <?php $statusLink = $statusLink1."&status2=16"; ?>
                     <a class="button fancybox7000" style="background-color: #c66;" href="<?php echo $statusLink; ?>">ΑΚΥΡΩΣΗ</a>
                 <?php } ?>
+
+                <?php $statusLink = $statusLink1."&status2=20"; ?>
+                <a class="button fancybox7000" style="background-color: #660;" href="<?php echo $statusLink; ?>">ΤΡΑΠ. ΚΑΤΑΘΕΣΗ</a>
                 
                 <?php $statusLink = $statusLink1."&status2=14"; ?>
                 <a class="button fancybox7000" href="<?php echo $statusLink; ?>">ΕΠΙΚΟΙΝΩΝΙΑ</a>
