@@ -115,7 +115,7 @@ include '_theHeader.php';
     $c_profession = new comboBox("c_profession", $db1, 
             "SELECT * FROM PROFESSIONS", 
             "id", "description",
-            $companyType);
+            $profession);
     $c_profession->set_label("ΕΠΑΓΓΕΛΜΑ");
     $c_profession->get_comboBox();
     
