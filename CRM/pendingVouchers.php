@@ -75,9 +75,10 @@ for ($i = 0; $i < count($rs); $i++) {
     $rs[$i]['pending'] = "<span title=\"Αλλαγή status->Ολοκλήρωση\" data-voucher=\"$voucherid\" class=\"fa fa-hourglass voucher-pending tooltip\"><span>";
     
     $userFullame = trim(func::vlookupRS("fullname", $rsUsers, $rs[$i]['userid']));
-    $userAr = explode(" ", $userFullame);
-    $myUsername = count($userAr)==2? $userAr[1]: $userAr[0];
-    $rs[$i]['userid'] = "<span title=\"$userFullame\">$myUsername</span>";
+    // $userAr = explode(" ", $userFullame);
+    // $myUsername = count($userAr)==2? $userAr[1]: $userAr[0];
+    // $rs[$i]['userid'] = "<span title=\"$userFullame\">$myUsername</span>";
+    $rs[$i]['userid'] = "<span title=\"$userFullame\">$userFullame</span>";
     
     $strDeliveryDate = func::str14toDate($rs[$i]['deliverydate'],"-", "EN");
     $dateDeliveryDate = new DateTime($strDeliveryDate);
@@ -119,7 +120,9 @@ for ($i = 0; $i < count($rsDates); $i++) {
 $myStyle = <<<EOT
 <style>        
     #grid {
-        max-width: 1200px;
+        width: 100%;
+        max-width:100%;
+        table-layout: fixed;
     }
         
     #grid th {
@@ -140,6 +143,17 @@ $myStyle = <<<EOT
     #grid td:nth-child(14):hover,
     #grid td:nth-child(15):hover {
         color: rgb(0,0,0);
+    }
+
+    #grid td:nth-child(13),
+    #grid td:nth-child(14),
+    #grid td:nth-child(15) {
+        display:none;
+    }
+    #grid th:nth-child(13),
+    #grid th:nth-child(14),
+    #grid th:nth-child(15) {
+        display:none;
     }
 
     #grid th:nth-child(8),

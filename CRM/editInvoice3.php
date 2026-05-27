@@ -22,17 +22,17 @@ if (isset($_GET['company'])) {
     $companyid = $_GET['company'];
 }
 
-$sql = "SELECT *, '' AS mydescription FROM TRANSACTIONS WHERE company=? AND transactiontype=1 AND `status` IN (1,2) AND (invoiced=0 OR invoiced IS NULL)";
+$sql = "SELECT *, '' AS mydescription FROM TRANSACTIONS WHERE company=? AND transactiontype=1 AND `status` IN (1,2) AND (invoiced=0 OR invoiced IS NULL) ";
 $rs = $db1->getRS($sql, array($companyid));
-//print_r($rs);
+// print_r($rs);
 $finishedTransactions = "";
 for ($i = 0; $i < count($rs); $i++) {
-    $rs[$i]['mydescription'] = func::vlookup("description", "PACKAGES", "id=".$rs[$i]['package'], $db1)
-            . " / ".$rs[$i]['amount'] . " / " 
-            . func::vlookup("description", "TRANSACTION_STATUS", "id=".$rs[$i]['status'], $db1) 
-            . " / " . func::str14toDate($rs[$i]['tdatetime']);
+    $rs[$i]['mydescription'] = func::vlookup("description", "PACKAGES", "id=".$rs[$i]['package'], $db1) 
+        . " / ".$rs[$i]['amount'] . " / " 
+        . func::vlookup("description", "TRANSACTION_STATUS", "id=".$rs[$i]['status'], $db1) 
+        . " / " . func::str14toDate($rs[$i]['tdatetime']);
     
-    if ($rs[$i]['status']==2) {
+    if ($rs[$i]['status']==2 && $rs[$i]['tdatetime']>=date('YmdHis', strtotime("-1 year"))) {
         $finishedTransactions = func::ConcatSpecial($finishedTransactions, 
                 "[".$rs[$i]['id']."]", ",");
     }
@@ -463,10 +463,11 @@ if (isset($_REQUEST['mydata'])) {
                 ?>
                 | ΣΥΝΟΛΟ <?php echo func::nrToCurrency($total); ?></h3>
                 
-                
+                <?php if ($id>0) { ?>
                 <h3>Το τιμολόγιο έχει ανοιχθεί για προεπισκόπηση 
                     <?php $timesread = $invoice->get_timesread()!=""? $invoice->get_timesread() : 0; echo $timesread; ?> 
                     φορές</h3>
+                <?php } ?>
                 
                 
                 
@@ -481,7 +482,7 @@ if (isset($_REQUEST['mydata'])) {
                     }
                     else {
                         echo "<h3>Θα τιμολογηθούν οι ακόλουθες χρεώσεις.</h3>";
-                                                
+                        echo "<!--$finishedTransactions-->";
                         $list_charges = new selectList("list_charges", "", $finishedTransactions, $db1);
                         $list_charges->set_descrField("mydescription");
                         $list_charges->set_rs($rs);

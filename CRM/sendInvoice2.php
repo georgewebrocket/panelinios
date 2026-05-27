@@ -41,6 +41,7 @@ $invoice = new INVOICEHEADERS($db1, $id);
 $companyid = $invoice->get_company();
 $company = new COMPANIES($db1, $companyid);
 $onlineId = $company->get_catalogueid() * 2 + 7128;
+$userid = $_SESSION['user_id'];
 $sendTo = $company->get_email();
 if ($company->get_contactperson()!="") {
     $customer = $company->get_contactperson();
@@ -110,6 +111,18 @@ if (isset($_GET['send']) && $_GET['send']==1) {
             $sentEmail->set_isread(0);
             
             $sentEmail->Savedata();
+
+            $invoicenr = $invoice->get_icode();
+
+            $action = new ACTIONS($db1, 0);
+            $action->set_company($companyid);
+            $action->set_user($userid);
+            $action->set_status1(0);
+            $action->set_status2(14); // epikoinonia
+            $action->set_voucherid(0);
+            $action->set_comment("ΑΠΟΣΤΟΛΗ ΤΙΜΟΛΟΓΙΟΥ  No {$invoicenr} ΣΤΟ {$sendTo}");
+            $action->Savedata();
+
         }
         
     }
