@@ -261,8 +261,32 @@ $myScript = <<<EOT
         });
         
         
+        var sortStorageKey = "pendingVouchers.sortList";
+        var savedSortList = [];
+        var columnCount = $("#grid thead th").length;
+
+        try {
+            var storedSortList = JSON.parse(localStorage.getItem(sortStorageKey));
+
+            if ($.isArray(storedSortList)) {
+                $.each(storedSortList, function(index, sortColumn) {
+                    if ($.isArray(sortColumn) &&
+                        sortColumn.length === 2 &&
+                        parseInt(sortColumn[0], 10) === sortColumn[0] &&
+                        sortColumn[0] >= 0 &&
+                        sortColumn[0] < columnCount &&
+                        (sortColumn[1] === 0 || sortColumn[1] === 1)) {
+                        savedSortList.push(sortColumn);
+                    }
+                });
+            }
+        }
+        catch (e) {
+            savedSortList = [];
+        }
+
         $("#grid").tablesorter({ 
-            /*sortList: [[3,0],[4,0]],*/
+            sortList: savedSortList,
             headers: { 
                 2: { 
                     sorter:'dates' 
@@ -271,6 +295,13 @@ $myScript = <<<EOT
                     sorter:'dates' 
                 }
             } 
+        }).bind("sortEnd", function() {
+            try {
+                localStorage.setItem(sortStorageKey, JSON.stringify(this.config.sortList));
+            }
+            catch (e) {
+                // Sorting remains functional when localStorage is unavailable.
+            }
         });
 
     });
