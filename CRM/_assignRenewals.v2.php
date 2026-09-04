@@ -59,12 +59,50 @@ function assignCompanyToUser($companyId, $userId, $product, $dbo) {
 
 
 $product = $_REQUEST['product'];
+$expires1 = isset($_REQUEST['expires1'])? $_REQUEST['expires1']: "";
+$expires2 = isset($_REQUEST['expires2'])? $_REQUEST['expires2']: "";
+$assignCount = isset($_REQUEST['assignCount'])? $_REQUEST['assignCount']: 0;
 $user = $_REQUEST['user'];
 $users = explode(",",  $_REQUEST['users']);
 $customers = explode(",",  $_REQUEST['customers']);
 
+$userCompanies = array();
+$assignedCount = 0;
+
 for ($i=0; $i < count($users); $i++) { 
+    if (!isset($customers[$i]) || $customers[$i]=="" || $users[$i]=="") {
+        continue;
+    }
+
     assignCompanyToUser($customers[$i], $users[$i], $product, $db1);
+
+    if (!isset($userCompanies[$users[$i]])) {
+        $userCompanies[$users[$i]] = array();
+    }
+    array_push($userCompanies[$users[$i]], $customers[$i]);
+    $assignedCount++;
+}
+
+if ($assignedCount>0) {
+    $log_user_assignments = "";
+    foreach ($userCompanies as $userId => $companyIds) {
+        $iUser = new USERS($db1, $userId);
+        $log_user_assignments .= $iUser->get_fullname() . " " . implode(", ", $companyIds) . "<br/>";
+    }
+
+    //log
+    $assignment = new CUSTOMER_ASSIGNMENTS($db1, 0);
+    $assignment->ca_datetime(date("YmdHis"));
+    $assignment->title("ΑΝΑΘΕΣΗ ΑΝΑΝΕΩΣΕΩΝ");
+
+    $expires1date = $expires1!=""? func::str14toDate(func::dateTo14str($expires1)): "";
+    $expires2date = $expires2!=""? func::str14toDate(func::dateTo14str($expires2)): "";
+    $product_name = func::vlookup("description", "PRODUCT_CATEGORIES", "id=$product", $db1);
+
+    $assignment->details("ΗΜΕΡ. ΛΗΞΗΣ $expires1date  - $expires2date.<br/> ΠΡΟΪΟΝ $product_name<br/>ΑΡΙΘΜ. ΑΝΑΝΕΩΣΕΩΝ $assignedCount <br/> $log_user_assignments");
+    $user_id = $_SESSION['user_id'];
+    $assignment->user($user_id);
+    $assignment->Savedata();
 }
 
 echo $_REQUEST['customers'];

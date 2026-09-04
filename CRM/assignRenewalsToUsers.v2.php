@@ -278,6 +278,9 @@ $(document).ready(function() {
             $("#btnAssign").click(function() {
                 
                 var product = $("#c_product").val();
+                var expires1 = $("#t_expireDate1").val();
+                var expires2 = $("#t_expireDate2").val();
+                var assignCount = $("#c_compCount").val();
                 var user = 0; //...
                 
                 var users = "";
@@ -299,6 +302,9 @@ $(document).ready(function() {
                 $.post( "_assignRenewals.v2.php", 
                     {
                         product: product,
+                        expires1: expires1,
+                        expires2: expires2,
+                        assignCount: assignCount,
                         user: user,
                         users: users,
                         customers: customers

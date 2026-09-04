@@ -7,9 +7,9 @@
  */
 
 
-// ini_set('display_errors',1); 
-// error_reporting(E_ALL);
- 
+ini_set('display_errors',0); 
+error_reporting(E_ALL);
+
 
 require_once('php/config.php');
 require_once('php/session.php');
@@ -25,8 +25,9 @@ $date2 = "";
 
 if ($_POST) {
     
-        //     $sql0 = "UPDATE `ACTIONS` SET `product_cat` = digits(`product_categories`) WHERE status2 IN (18,19) AND product_cat IS NULL";
-        $sql0 = "UPDATE `ACTIONS` SET `product_cat` = REGEXP_REPLACE(`product_categories`, '[^0-9]', '') WHERE status2 IN (18,19) AND product_cat IS NULL";
+//     $sql0 = "UPDATE `ACTIONS` SET `product_cat` = digits(`product_categories`) WHERE status2 IN (18,19) AND product_cat IS NULL";
+    $sql0 = "UPDATE `ACTIONS` SET `product_cat` = REGEXP_REPLACE(`product_categories`, '[^0-9]', '') WHERE status2 IN (18,19) AND product_cat IS NULL";
+    //REGEXP_REPLACE(your_column, '[^0-9]', '')
     $ret = $db1->execSQL($sql0);
     
     
@@ -57,6 +58,8 @@ if ($_POST) {
     //var_dump(array($date1a, $date2a));
     
     $rs = $db1->getRS($sql, array($date1a, $date2a));
+
+    //var_dump($rs);
         
     if ($rs) {
         
@@ -139,7 +142,13 @@ if ($_POST) {
             
         }
         
-                       
+        $recallsCount = func::nrToCurrency($recallsCount, $locale);
+        $negativeCount = func::nrToCurrency($negativeCount, $locale);
+        $agreedCount = func::nrToCurrency($agreedCount, $locale);
+        $payedCount = func::nrToCurrency($payedCount, $locale);
+        $returnCount = func::nrToCurrency($returnCount, $locale);
+        $totalCount = func::nrToCurrency($totalCount, $locale);
+               
         
     }
     
@@ -157,6 +166,9 @@ if ($_POST) {
             GROUP BY USERS.id, `STATUS`.`description`, `STATUS`.id";
         
     $rs = $db1->getRS($sql2, array($date1a, $date2a));
+    
+//     echo $sql2;
+//     var_dump($rs);
         
     if ($rs) {
         
@@ -249,6 +261,7 @@ if ($_POST) {
     }
 
 
+
     //show log
     $date1 = $_POST['t_date1'];
     $date1b = textbox::getDate($date1, $locale);
@@ -259,7 +272,7 @@ if ($_POST) {
     $date2b = substr($date2b, 0, 8) . "235959";
 
     $sql = "SELECT * FROM CUSTOMER_ASSIGNMENTS WHERE ca_datetime>=? AND ca_datetime<=?";
-    $rsAssigns = $db1->getRS($sql, array($date1b,$date2b));
+    $rsAssigns = $db1->getRS($sql, array($date1b,$date2b));   
        
     
 }
@@ -289,6 +302,8 @@ if ($_POST) {
     <div class="main">
 
         <h1 style="margin-left: 20px;">Έλεγχος αναθέσεων (Νέες κλήσεις / Ανανεώσεις)</h1>
+
+        
         
         
         <form action="reportAssigns.php" method="post" style="max-width: 500px">
@@ -316,21 +331,21 @@ if ($_POST) {
         
         <div class="spacer-50"></div>
 
-
         <div style="margin-left: 20px;">
                 <?php 
-                
-                foreach ($rsAssigns as $assign) {
-                echo "<h2>".func::str14toDate($assign['ca_datetime']) . " " . $assign['title'] ."</h2>";
-                echo "<p>" . $assign['details'] . "</p>";
+                if ($rsAssigns) {
+                        foreach ($rsAssigns as $assign) {
+                                echo "<h2>".func::str14toDate($assign['ca_datetime']) . " " . $assign['title'] ."</h2>";
+                                echo "<p>" . $assign['details'] . "</p>";
+                        }
                 }
+                
                 
                 ?>
         </div>
 
         <hr style="margin-top:30px;margin-bottom:30px;">
-
-
+        
         
         <?php
         
